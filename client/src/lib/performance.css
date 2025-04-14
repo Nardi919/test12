@@ -1,0 +1,50 @@
+/**
+ * Performance optimization styles
+ * These styles help improve render performance across the app
+ */
+
+/* Hardware acceleration class */
+.hardware-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+/* Specific optimizations for animations */
+.optimize-animation {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* For text animations */
+.optimize-text {
+  will-change: transform, opacity, color;
+}
+
+/* For background animations */
+.optimize-bg {
+  will-change: background, opacity;
+}
+
+/* Force GPU acceleration for any element */
+.force-gpu {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Reduce animation CPU impact */
+@media screen and (prefers-reduced-motion: reduce) {
+  .motion-safe {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Forces an element to render on a separate GPU layer for better paint performance */
+.gpu-layer {
+  isolation: isolate;
+  z-index: 1;
+  will-change: transform;
+  transform: translateZ(0);
+}
