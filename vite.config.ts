@@ -33,4 +33,5 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
   },
+  base: "./", // Add this for Netlify to correctly serve assets
 });
