@@ -18,6 +18,43 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.set('trust proxy', 1);
 
+// Set security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+      fontSrc: ["'self'", "https:", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: true,
+  crossOriginResourcePolicy: { policy: "same-site" },
+  dnsPrefetchControl: true,
+  frameguard: { action: "deny" },
+  hidePoweredBy: true,
+  hsts: true,
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true,
+}));
+
+// Add rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
 // Very permissive CSP to ensure all resources load properly
 app.use(
   helmet({
@@ -91,7 +128,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   if (err.code === 'EBADCSRFTOKEN') {
     // Log potential CSRF attack 
     console.error(`[${new Date().toISOString()}] CSRF attack detected from IP: ${req.ip}`);
-    
+
     // Return a 403 status code
     return res.status(403).json({
       success: false,
@@ -198,7 +235,7 @@ app.use((req, res, next) => {
 
   // Serve the app on port 5000
   // This serves both the API and the client
-  const port = 5000;
+  const port = process.env.PORT || process.env.NODE_ENV === 'production' ? 80 : 5000;
   server.listen(port, "0.0.0.0", (err?: Error) => {
     if (err) {
       log(`Error starting server: ${err.message}`);
